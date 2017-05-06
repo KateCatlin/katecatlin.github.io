@@ -5,29 +5,36 @@ var drawSnake = function(snakeToDraw) {
 }
 
 var moveSegment = function(segment) {
-  if (segment.direction === "down") {
-    return { top: segment.top + 1, left: segment.left }
-  } else if (segment.direction === "up") {
-    return { top: segment.top - 1, left: segment.left }
-  } else if (segment.direction === "right") {
-    return { top: segment.top, left: segment.left + 1 }
-  } else if (segment.direction === "left") {
-    return { top: segment.top, left: segment.left - 1 }
+  switch(segment.direction) {
+    case "down":
+      return { top: segment.top + 1, left: segment.left };
+    case "up":
+      return { top: segment.top - 1, left: segment.left };
+    case "right":
+      return { top: segment.top, left: segment.left + 1 }
+    case "left":
+      return { top: segment.top, left: segment.left - 1 }
+    default:
+      return segment;
   }
-  return segment;
 }
 
 var moveSnake = function(snake) {
-  var oldSegment = snake[0];
-  var newSegment = moveSegment(oldSegment);
-  newSegment.direction = oldSegment.direction;
-  var newSnake = [newSegment];
+  var newSnake = [];
+  snake.forEach(function(oldSegment) {
+    var newSegment = moveSegment(oldSegment);
+    newSegment.direction = oldSegment.direction;
+    newSnake.push(newSegment);
+  });
   return newSnake;
 }
 
-
 var advanceGame = function() {
   snake = moveSnake(snake);
+  if (CHUNK.detectCollisionBetween(snake, CHUNK.gameBoundaries())) {
+    CHUNK.endGame();
+    CHUNK.flashMessage("Whoops! you hit a wall!");
+  }
   drawSnake(snake);
 }
 
@@ -35,6 +42,7 @@ var changeDirection = function(direction) {
   snake[0].direction = direction;
 }
 
-var snake = [{ top: 0, left: 0, direction: "down" }];
-CHUNK.executeNTimesPerSecond(advanceGame, 1);
+var snake = [{ top: 1, left: 0, direction: "down" }, { top: 0, left: 0, direction: "down" }];
+
+CHUNK.executeNTimesPerSecond(advanceGame, 3);
 CHUNK.onArrowKey(changeDirection);
